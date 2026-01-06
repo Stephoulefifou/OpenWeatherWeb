@@ -48,4 +48,7 @@ public class SessionConfiguration {
     public static SessionFactory getSessionAnnotationFactory() {
         return getSessionFactory();
     }
+    public static void shutdown() {
+        sessionFactory.close();
+    }
 }

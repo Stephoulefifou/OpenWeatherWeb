@@ -283,7 +283,6 @@ public class AppService implements IOpenWeatherServices {
             }
 
             return new ArrayList<>(stations);
-
         }
     }
 
