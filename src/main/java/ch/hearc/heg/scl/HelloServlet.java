@@ -1,4 +1,4 @@
-package ch.hearc.ig.demo;
+package ch.hearc.heg.scl;
 
 import java.io.*;
 
