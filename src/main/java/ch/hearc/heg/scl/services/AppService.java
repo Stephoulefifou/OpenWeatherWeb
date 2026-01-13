@@ -413,4 +413,59 @@ public class AppService implements IOpenWeatherServices {
         return new ResultSearch(pays, meteo, station);
     }
 
+    /**
+     * Retourne la station complète avec toutes ses mesures météo détachées, par son numero.
+     */
+    public StationMeteo getStationByNumero(int numero) {
+        try (Session session = SessionConfiguration.getSessionFactory().openSession()) {
+
+            // --- Récupère la station depuis la DB ---
+            StationMeteo station = session.createQuery(
+                            "from StationMeteo s where s.numero = :numero", StationMeteo.class)
+                    .setParameter("numero", numero)
+                    .uniqueResult();
+
+            if (station == null) return null;
+
+            // --- Charge toutes les mesures météo associées ---
+            List<Meteo> mesures = session.createQuery(
+                            "from Meteo m where m.station.numero = :stationId order by m.dateMesure asc", Meteo.class)
+                    .setParameter("stationId", numero)
+                    .getResultList();
+
+            // --- Détache toutes les mesures pour éviter les PersistentBag / proxys ---
+            List<Meteo> copy = new ArrayList<>();
+            for (Meteo m : mesures) {
+                if (m == null) continue;
+
+                Meteo m2 = new Meteo();
+                m2.setNumero(m.getNumero());
+                m2.setDateMesure(m.getDateMesure());
+                m2.setTemperature(m.getTemperature());
+                m2.setPression(m.getPression());
+                m2.setHumidite(m.getHumidite());
+                m2.setVisibilite(m.getVisibilite());
+                m2.setPrecipitation(m.getPrecipitation());
+                m2.setTexte(m.getTexte() != null ? new ArrayList<>(m.getTexte()) : new ArrayList<>());
+
+                copy.add(m2);
+            }
+
+            station.setDonneesMeteo(copy);
+
+            // --- Détache le pays pour éviter les proxys ---
+            if (station.getPays() != null) {
+                Pays p = station.getPays();
+                Pays copyPays = new Pays();
+                copyPays.setNumero(p.getNumero());
+                copyPays.setNom(p.getNom());
+                copyPays.setCode(p.getCode());
+                station.setPays(copyPays);
+            }
+
+            return station;
+        }
+    }
+
+
 }

@@ -56,4 +56,24 @@ public class StationsServlet extends HttpServlet {
         // Forward vers la JSP
         request.getRequestDispatcher("/index.jsp").forward(request, response);
     }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String action = request.getParameter("action");
+
+        try {
+            if ("refreshAll".equals(action)) {
+                System.out.println("🔄 Rafraîchissement de toutes les stations demandé depuis l'IHM");
+                appService.refreshAllStations();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServletException("Erreur lors du rafraîchissement des stations", e);
+        }
+
+        // Redirige vers le GET pour recharger la liste mise à jour
+        response.sendRedirect(request.getContextPath() + "/stations");
+    }
+
 }

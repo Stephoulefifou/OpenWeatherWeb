@@ -1,0 +1,83 @@
+package ch.hearc.heg.scl.servlet;
+
+import ch.hearc.heg.scl.business.ResultSearch;
+import ch.hearc.heg.scl.business.StationMeteo;
+import ch.hearc.heg.scl.services.AppService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.rmi.RemoteException;
+
+@WebServlet("/findStation")
+public class FindStationServlet extends HttpServlet {
+    private AppService appService = new AppService();
+
+    public FindStationServlet() throws RemoteException {
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Affiche juste le formulaire si pas de params
+        request.getRequestDispatcher("/findStation.jsp").forward(request, response);
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String latStr = request.getParameter("latitude");
+        String lonStr = request.getParameter("longitude");
+
+        if (latStr == null || lonStr == null) {
+            request.setAttribute("error", "Merci de remplir les deux champs.");
+            request.getRequestDispatcher("/findStation.jsp").forward(request, response);
+            return;
+        }
+
+        try {
+            double latitude = Double.parseDouble(latStr);
+            double longitude = Double.parseDouble(lonStr);
+
+            ResultSearch result = appService.getWeatherByCoordinates(latitude, longitude);
+
+            // 🔥 Cas où l'API répond mais sans station
+            if (result == null || result.getStationMeteo() == null) {
+                request.setAttribute(
+                        "error",
+                        "🤷‍♂️ Tu es soit dans l’eau, soit trop loin d’une station météo existante."
+                );
+            } else {
+                request.setAttribute("station", result);
+            }
+
+        }
+        catch (java.rmi.RemoteException e) {
+            // 🔥 CAS NORMAL : API ne trouve rien
+            request.setAttribute(
+                    "error",
+                    "🌊❄️ Aucune station météo trouvée à proximité (zone isolée ou océan)."
+            );
+        }
+        catch (NumberFormatException e) {
+            request.setAttribute(
+                    "error",
+                    "Latitude ou longitude invalide."
+            );
+        }
+        catch (Exception e) {
+            // 🚨 VRAIE ERREUR
+            e.printStackTrace(); // important pour debug
+            request.setAttribute(
+                    "error",
+                    "🚨 Erreur technique lors de l’appel à l’API météo."
+            );
+        }
+
+        request.getRequestDispatcher("/findStation.jsp").forward(request, response);
+    }
+
+
+}

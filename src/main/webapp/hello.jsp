@@ -4,6 +4,7 @@
     <title>Hello JSP</title>
 </head>
 <body>
+<jsp:include page="/menu.jsp" />
 <h1>Page générée par la Servlet</h1>
 <p>Message : ${message}</p>
 <a href="index.jsp">Retour à l'accueil</a>
