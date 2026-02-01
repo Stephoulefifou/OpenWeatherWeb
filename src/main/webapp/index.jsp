@@ -40,12 +40,19 @@
         <c:otherwise>
             <ul>
                 <c:forEach var="station" items="${stations}">
-                    <li class="station-card" onclick="openStationModal('${station.numero}')">
+                    <li class="station-card" onclick="openStationModal(${station.numero})">
                         <div class="country">${station.pays.nom}</div>
                         <div class="station">${station.nom}</div>
-                        <div class="coords">
-                            🌍 lat: ${station.latitude} | lon: ${station.longitude}
-                        </div>
+
+                        <c:if test="${not empty station.donneesMeteo}">
+                            <c:set var="lastMeteo" value="${station.donneesMeteo[0]}" />
+                            <div class="last-meteo">
+                                Dernière mesure le ${lastMeteo.prettyDate}</div>
+                            <div>
+                                Température ${lastMeteo.temperature}°C - Humidité ${lastMeteo.humidite}%
+                            </div>
+
+                        </c:if>
                     </li>
                 </c:forEach>
             </ul>
@@ -61,11 +68,12 @@
         <h2 id="modalStationName"></h2>
         <p id="modalStationPays"></p>
         <p id="modalStationCoords"></p>
+        <!-- Cette zone va maintenant scroller toute seule -->
         <div id="modalMeteoList"></div>
+
         <button id="refreshStationBtn">🔄 Rafraîchir cette station</button>
     </div>
 </div>
-
 <!-- JS pour modal et fetch -->
 <script>
     const modal = document.getElementById('stationModal');
@@ -76,49 +84,74 @@
     const modalMeteoList = document.getElementById('modalMeteoList');
     const refreshBtn = document.getElementById('refreshStationBtn');
 
-    // Ouvre le modal avec les données d'une station
     function openStationModal(numero) {
-        fetch(`station-json?numero=${numero}`)
+        console.log("Ouverture modal pour station :", numero);
+
+        fetch('station-json?numero=' + numero)
             .then(res => res.json())
             .then(data => {
-                modalStationName.textContent = data.nom;
-                modalStationPays.textContent = "Pays : " + data.pays.nom;
-                modalStationCoords.textContent = "Lat: " + data.latitude + " | Lon: " + data.longitude;
+                console.log("Données reçues :", data);
 
+                // Remplissage des infos station (textContent est sûr)
+                modalStationName.textContent =  data.nom +" - " + (data.pays ? data.pays.nom : "Inconnu");
+                modalStationCoords.textContent = "Latitude : " + data.latitude + " - Longitude : " + data.longitude;
+
+                // Remplissage de la liste météo
                 modalMeteoList.innerHTML = "";
+
+
                 if (data.donneesMeteo && data.donneesMeteo.length > 0) {
                     data.donneesMeteo.forEach(m => {
                         const p = document.createElement('p');
-                        p.textContent = `${m.dateMesure} : ${m.temperature}°C | Humidité: ${m.humidite}%`;
+                        p.style.padding = "8px";
+                        p.style.borderBottom = "1px solid #eee";
+                        p.style.margin = "0";
+
+                        // --- CORRECTION ICI : Utilisation de la concaténation (+) au lieu de $ {} ---
+                        var html = '🕒 <strong>' + m.date + '</strong> : ';
+                        html += '🌡️ ' + m.temp + '°C | ';
+                        html += '💧 Humidité: ' + m.humi + '%';
+
+                        p.innerHTML = html;
                         modalMeteoList.appendChild(p);
                     });
                 } else {
-                    modalMeteoList.textContent = "Aucune donnée météo disponible.";
+                    modalMeteoList.innerHTML = "<p>Aucune donnée météo disponible.</p>";
                 }
 
+                // Gestion du bouton rafraîchir
+                refreshBtn.onclick = function() {
+                    refreshStation(data.numero);
+                };
+
                 modal.style.display = "flex";
-
-                // Bouton pour rafraîchir la station
-                refreshBtn.onclick = () => refreshStation(data.numero);
             })
-            .catch(err => console.error("Erreur fetch station:", err));
+            .catch(err => {
+                console.error("Erreur dans openStationModal:", err);
+                showModalError("Erreur de chargement des données.");
+            });
     }
 
-    // Rafraîchit une station individuelle
+
+    // Fonction utilitaire pour afficher un message d'erreur dans le modal
+    function showModalError(message) {
+        modalStationName.textContent = "Erreur";
+        modalStationPays.textContent = "";
+        modalStationCoords.textContent = "";
+        modalMeteoList.textContent = message;
+        modal.style.display = "flex";
+    }
+
+
     function refreshStation(numero) {
-        fetch(`refresh-station?numero=${numero}`, { method: 'POST' })
+        fetch('refresh-station?numero=' + numero, { method: 'POST' })
             .then(res => res.json())
-            .then(data => {
-                console.log("Station rafraîchie", data);
-                openStationModal(numero); // recharger modal avec nouvelles données
-            })
-            .catch(err => console.error("Erreur refresh station:", err));
+            .then(data => openStationModal(numero)) // On ré-ouvre pour voir les nouvelles données
+            .catch(err => console.error("Erreur refresh:", err));
     }
 
-    // Fermer le modal
     closeModal.onclick = () => modal.style.display = "none";
     window.onclick = e => { if (e.target === modal) modal.style.display = "none"; }
 </script>
-
 </body>
 </html>

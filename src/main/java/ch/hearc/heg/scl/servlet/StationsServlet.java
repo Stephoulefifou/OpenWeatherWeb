@@ -1,5 +1,6 @@
 package ch.hearc.heg.scl.servlet;
 
+import ch.hearc.heg.scl.business.Meteo;
 import ch.hearc.heg.scl.business.StationMeteo;
 import ch.hearc.heg.scl.services.AppService;
 
@@ -40,19 +41,25 @@ public class StationsServlet extends HttpServlet {
 
         try {
             stations = appService.getStations();
+            for (StationMeteo s : stations) {
+                if (s.getNumero() != null) {
+                    List<Meteo> mesures = appService.getStationByNumero(s.getNumero()).getDonneesMeteo();
+                    if (mesures != null && !mesures.isEmpty()) {
+                        // La dernière mesure = la plus récente (ordre croissant dans getStationByNumero)
+                        s.setDonneesMeteo(List.of(mesures.get(mesures.size() - 1)));
+                    }
+                }
+            }
             System.out.println("Stations récupérées : " + (stations != null ? stations.size() : "null"));
 
             for (StationMeteo s : stations) {
                 System.out.println(s.getNom() + " | " + s.getLatitude() + " | " + s.getLongitude());
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         // Passe la liste à la JSP
         request.setAttribute("stations", stations);
-
         // Forward vers la JSP
         request.getRequestDispatcher("/index.jsp").forward(request, response);
     }
@@ -77,3 +84,33 @@ public class StationsServlet extends HttpServlet {
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

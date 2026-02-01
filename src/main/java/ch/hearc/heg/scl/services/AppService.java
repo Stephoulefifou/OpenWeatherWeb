@@ -286,36 +286,43 @@ public class AppService implements IOpenWeatherServices {
         }
     }
 
-    @Override
-    public ResultSearch getWeatherForStation(int stationId) throws RemoteException {
-        System.out.println("Appel getWeatherForStation côté serveur pour station : " + stationId);
+    public ResultSearch getWeatherForStation(int databaseId) throws RemoteException {
+        System.out.println("Appel getWeatherForStation pour ID base de données : " + databaseId);
 
-        try {
-            // --- Appel API externe ---
+        try (Session session = SessionConfiguration.getSessionFactory().openSession()) {
+            // 1. On va chercher la station en base pour trouver son VRAI ID OpenWeatherMap
+            StationMeteo station = session.get(StationMeteo.class, databaseId);
+
+            if (station == null || station.getOpenWeatherMapId() == null) {
+                System.err.println("Station introuvable ou pas d'ID OpenWeatherMap pour : " + databaseId);
+                return null;
+            }
+
+            int owmId = station.getOpenWeatherMapId();
+            System.out.println("VRAI ID OpenWeatherMap trouvé : " + owmId);
+
+            // 2. On appelle l'API avec le BON identifiant
             OpenWeatherApi api = new OpenWeatherApi();
-            String json = api.callApi(stationId);
+            String json = api.callApi(owmId); // <-- C'est l'ID OWM ici !
+
+            if (json == null || json.contains("404") || json.contains("error")) {
+                System.err.println("L'API OpenWeather a renvoyé une erreur pour l'ID " + owmId + " : " + json);
+                return null;
+            }
+
             Gson gson = new Gson();
             OpenWeatherResponse orw = gson.fromJson(json, OpenWeatherResponse.class);
 
-            if (orw == null) {
-                System.out.println("Le client a entré une station inexistante (ce n'est pas censé arriver)");
-                return null;
-            }
-            // --- Persist et map DTO -> Entities ---
+            // 3. On persiste les nouvelles données (ça créera une nouvelle ligne dans METEO)
             ResultSearch rs = fetchAndPersistWeather(orw);
-            // --- Charger toutes les mesures météo depuis la base ---
-            detachStationData(rs.getStationMeteo());
-            // --- Détacher Pays et Meteo pour sécurité ---
-            rs = detachResultSearch(rs);
 
-            return rs;
+            // 4. On recharge tout proprement pour le retour
+            detachStationData(rs.getStationMeteo());
+            return detachResultSearch(rs);
 
         } catch (Exception e) {
-            System.err.println("🔥 ERREUR SERVEUR getWeatherForStation : " + e.getClass().getName());
-            System.err.println("➡ Message : " + e.getMessage());
-            e.printStackTrace();
-
-            throw new RemoteException("Erreur interne du serveur lors de la récupération de la météo.");
+            System.err.println("🔥 ERREUR SERVEUR : " + e.getMessage());
+            throw new RemoteException("Erreur lors du rafraîchissement.");
         }
     }
 
@@ -466,6 +473,8 @@ public class AppService implements IOpenWeatherServices {
             return station;
         }
     }
-
+    public ResultSearch refreshStation(int stationId) throws RemoteException {
+        return getWeatherForStation(stationId);
+    }
 
 }

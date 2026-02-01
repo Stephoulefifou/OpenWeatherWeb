@@ -6,6 +6,7 @@ import lombok.extern.java.Log;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,4 +52,14 @@ public class Meteo implements Serializable {
     )
     @Column(name = "TEXTE", nullable = false) // correspond à la colonne TEXTE de ta table
     private List<String> texte = new ArrayList<>();
+
+    public String getDateMesureStr() {
+        return dateMesure.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
+    public String getPrettyDate() {
+        if (this.dateMesure == null) return "Date inconnue";
+        // Format : Jour.Mois.Année Heure:Minute
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+        return this.dateMesure.format(formatter);
+    }
 }

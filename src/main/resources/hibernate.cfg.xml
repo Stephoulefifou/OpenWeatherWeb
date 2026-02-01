@@ -3,8 +3,8 @@
     <session-factory>
         <property name="hibernate.connection.driver_class">oracle.jdbc.OracleDriver</property>
         <property name="hibernate.connection.url">jdbc:oracle:thin:@db.ig.he-arc.ch:1521:ens</property>
-        <property name="hibernate.connection.username">maria_ramirez</property>
-        <property name="hibernate.connection.password">MARIA_RAMIREZ</property>
+        <property name="hibernate.connection.username">AGL_STEPHANE_THIEBAUD</property>
+        <property name="hibernate.connection.password">AGL_STEPHANE_THIEBAUD</property>
         <property name="hibernate.dialect">org.hibernate.dialect.OracleDialect</property>
         <property name="hibernate.show_sql">false</property>
         <property name="hibernate.format_sql">false</property>

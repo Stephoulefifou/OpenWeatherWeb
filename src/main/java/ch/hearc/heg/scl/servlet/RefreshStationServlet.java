@@ -3,6 +3,7 @@ package ch.hearc.heg.scl.servlet;
 import ch.hearc.heg.scl.business.ResultSearch;
 import ch.hearc.heg.scl.services.AppService;
 import com.google.gson.Gson;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,14 +19,27 @@ public class RefreshStationServlet extends HttpServlet {
     public RefreshStationServlet() throws RemoteException {
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        int numero = Integer.parseInt(req.getParameter("numero"));
-        ResultSearch rs = appService.getWeatherForStation(numero);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        new Gson().toJson(rs.getStationMeteo(), resp.getWriter());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        try {
+            String numeroParam = request.getParameter("numero");
+            int numero = Integer.parseInt(numeroParam);
+
+            // On appelle le service de rafraîchissement
+            appService.refreshStation(numero);
+
+            // On répond un succès en JSON
+            response.getWriter().write("{\"status\":\"ok\"}");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(500);
+            response.getWriter().write("{\"error\":\"Erreur lors du rafraîchissement\"}");
+        }
     }
 }
 
