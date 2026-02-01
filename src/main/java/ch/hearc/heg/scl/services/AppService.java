@@ -8,7 +8,6 @@ import ch.hearc.heg.scl.hibernate.utils.SessionConfiguration;
 import ch.hearc.heg.scl.mapper.MeteoMapper;
 import ch.hearc.heg.scl.mapper.PaysMapper;
 import ch.hearc.heg.scl.mapper.StationMeteoMapper;
-import ch.hearc.heg.scl.rmiObj.IOpenWeatherServices;
 import com.google.gson.Gson;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -19,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AppService implements IOpenWeatherServices {
+public class AppService  {
     public AppService() throws RemoteException {}
 
     /**
@@ -220,7 +219,6 @@ public class AppService implements IOpenWeatherServices {
         return query.uniqueResult();
     }
 
-    @Override
     public ResultSearch getWeatherByCoordinates(double lat, double lon) throws RemoteException {
 
         System.out.println("Appel getWeatherByCoordinates côté serveur : " + lat + "," + lon);
@@ -245,8 +243,6 @@ public class AppService implements IOpenWeatherServices {
         }
     }
 
-
-    @Override
     public void refreshAllStations() throws RemoteException {
     //a faire
         System.out.println("Appel getWeatherByCoordinates côté serveur pour toutes les stations : ");
@@ -276,7 +272,6 @@ public class AppService implements IOpenWeatherServices {
         }
     }
 
-    @Override
     public ArrayList<StationMeteo> getStations() {
         try (Session session = SessionConfiguration.getSessionFactory().openSession()) {
             //HQL

@@ -66,7 +66,9 @@ public class StationJsonServlet extends HttpServlet {
 
             List<Map<String, Object>> listeMeteo = new ArrayList<>();
             for (Meteo m : station.getDonneesMeteo()) {
+                // IMPORTANT : Il faut remplir la map 'mm' sinon le JSON est vide !
                 Map<String, Object> mm = new java.util.HashMap<>();
+
                 mm.put("date", m.getPrettyDate());
                 mm.put("temp", m.getTemperature());
                 mm.put("ressenti", m.getRessenti());
@@ -79,19 +81,22 @@ public class StationJsonServlet extends HttpServlet {
                 mm.put("ventVitesse", m.getVentVitesse());
                 mm.put("ventDirection", m.getVentDirection());
                 mm.put("ventRafales", m.getVentRafales());
+
                 mm.put("leverSoleil", m.getLeverSoleil() != null ?
                         m.getLeverSoleil().format(DateTimeFormatter.ofPattern("HH:mm")) : "Inconnu");
                 mm.put("coucherSoleil", m.getCoucherSoleil() != null ?
                         m.getCoucherSoleil().format(DateTimeFormatter.ofPattern("HH:mm")) : "Inconnu");
-                mm.put("texte", m.getTexte()); // liste de descriptions
-                listeMeteo.add(mm);
+
+                mm.put("texte", m.getTexte()); // Liste des descriptions
+
+                listeMeteo.add(mm); // On ajoute la map REMPLIE à la liste
             }
 
             json.put("donneesMeteo", listeMeteo);
 
             com.google.gson.Gson gson = new com.google.gson.GsonBuilder()
-                    .serializeNulls() // <--- Force l'affichage des nulls
-                    .setPrettyPrinting() // Optionnel : rend le JSON lisible dans le navigateur
+                    .serializeNulls()
+                    .setPrettyPrinting()
                     .create();
 
             response.getWriter().write(gson.toJson(json));

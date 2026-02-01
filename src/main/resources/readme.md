@@ -27,4 +27,4 @@ Si vous copiez depuis git (https://github.com/Stephoulefifou/OpenWeather.git), i
 Le client est configuré pour aller sur le localhost.  
 Si vous souhaitez changer ceci pour tester depuis un autre PC, il suffit de changer les lignes dans le MainClient et le MainServer. Dans les deux cas : commentez la ligne du localhost, décommentez l'autre, renseignez l'IP du serveur à l'endroit indiqué.
 
-NOTE : Maria ne fait plus partie du groupe, mais la structure de la base étant sur son schéma, nous avons décidé de laisser comme cela
+NOTE : Les schémas "normaux" ne permettent plus d'accès. nous avons ainsi mis nos schéma AGL, qui ont une théorique durée restante de 7 jours. Dans le cas ou cela ne fonctionnerait pas au démarrage, il faudrait remplacer les informations dans hibernate.cfg.xml par vos propres schémas Oracle. Hibernate se chargera de la création des tables.

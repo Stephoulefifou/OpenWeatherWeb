@@ -119,13 +119,13 @@
                         p.style.padding = "8px";
                         p.style.borderBottom = "1px solid #eee";
                         p.style.margin = "0";
-
+                        let pluieAffichee = (m.precipitation && m.precipitation > 0) ? m.precipitation + ' mm' : 'Pas de pluie';
                         let html = '<strong>' + m.date + '</strong> : ';
                         html += '🌡️ ' + m.temp + '°C (ressenti ' + m.ressenti + '°C) | ';
                         html += 'Min/Max: ' + m.tempMin + '/' + m.tempMax + '°C | ';
                         html += '💧 Humidité: ' + m.humi + '% | ';
                         html += '💨 Vent: ' + m.ventVitesse + ' km/h, rafales ' + m.ventRafales + ' km/h, dir ' + m.ventDirection + '° | ';
-                        html += '🌦️ Pluie: ' + m.precipitation + ' mm | ';
+                        html += '🌦️ Pluie: ' + pluieAffichee  + ' | ';
                         html += '🌤️ Pression: ' + m.pression + ' hPa | ';
                         html += '🌫️ Visibilité: ' + m.visibilite + ' m | ';
                         html += '☀️ Lever: ' + m.leverSoleil + ' / Coucher: ' + m.coucherSoleil + ' | ';

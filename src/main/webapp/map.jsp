@@ -20,8 +20,6 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
 <div id="map"></div>
-
-<!-- IL MANQUAIT CETTE BALISE CI-DESSOUS -->
 <script>
     // -------------------------
     // 1. Transfert des stations côté JS

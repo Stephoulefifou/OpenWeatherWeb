@@ -1,7 +1,6 @@
 package ch.hearc.heg.scl.servlet;
 
 import ch.hearc.heg.scl.business.StationMeteo;
-import ch.hearc.heg.scl.persistance.StationMeteoDAO;
 import ch.hearc.heg.scl.services.AppService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
