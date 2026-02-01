@@ -120,15 +120,16 @@
                         p.style.borderBottom = "1px solid #eee";
                         p.style.margin = "0";
                         let pluieAffichee = (m.precipitation && m.precipitation > 0) ? m.precipitation + ' mm' : 'Pas de pluie';
+                        let rafale = (m.ventRafales && m.ventRafales > 0) ? 'rafales '+m.ventRafales + ' km/h ,' : '';
                         let html = '<strong>' + m.date + '</strong> : ';
-                        html += '🌡️ ' + m.temp + '°C (ressenti ' + m.ressenti + '°C) | ';
-                        html += 'Min/Max: ' + m.tempMin + '/' + m.tempMax + '°C | ';
-                        html += '💧 Humidité: ' + m.humi + '% | ';
-                        html += '💨 Vent: ' + m.ventVitesse + ' km/h, rafales ' + m.ventRafales + ' km/h, dir ' + m.ventDirection + '° | ';
-                        html += '🌦️ Pluie: ' + pluieAffichee  + ' | ';
-                        html += '🌤️ Pression: ' + m.pression + ' hPa | ';
-                        html += '🌫️ Visibilité: ' + m.visibilite + ' m | ';
-                        html += '☀️ Lever: ' + m.leverSoleil + ' / Coucher: ' + m.coucherSoleil + ' | ';
+                        html += '🌡️ ' + m.temp + '°C (ressenti ' + m.ressenti + '°C) - ';
+                        html += 'Min/Max: ' + m.tempMin + '/' + m.tempMax + '°C'+'<br>';
+                        html += '🌦️ Pluie: ' + pluieAffichee  + ' - ';
+                        html += '💧 Humidité: ' + m.humi + '% - ';
+                        html += '💨 Vent: ' + m.ventVitesse + ' km/h, ' + rafale + ' dir ' + m.ventDirection + '°'+'<br>';
+                        html += '🌤️ Pression: ' + m.pression + ' hPa - ';
+                        html += '🌫️ Visibilité: ' + m.visibilite + ' m - ';
+                        html += '☀️ Lever: ' + m.leverSoleil + ' / Coucher: ' + m.coucherSoleil +'<br>';
                         if (m.texte && m.texte.length > 0) {
                             html += 'Descriptions: ' + m.texte.join(", ");
                         }
