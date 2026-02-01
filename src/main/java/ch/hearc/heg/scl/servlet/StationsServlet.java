@@ -61,7 +61,7 @@ public class StationsServlet extends HttpServlet {
         // Passe la liste à la JSP
         request.setAttribute("stations", stations);
         // Forward vers la JSP
-        request.getRequestDispatcher("/index.jsp").forward(request, response);
+        request.getRequestDispatcher("/ToutesLesStations.jsp").forward(request, response);
     }
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
