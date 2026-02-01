@@ -22,7 +22,7 @@ public class FindStationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Affiche juste le formulaire si pas de params
-        request.getRequestDispatcher("/findStation.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.jsp").forward(request, response);
     }
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -33,7 +33,7 @@ public class FindStationServlet extends HttpServlet {
 
         if (latStr == null || lonStr == null) {
             request.setAttribute("error", "Merci de remplir les deux champs.");
-            request.getRequestDispatcher("/findStation.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.jsp").forward(request, response);
             return;
         }
 
@@ -43,16 +43,15 @@ public class FindStationServlet extends HttpServlet {
 
             ResultSearch result = appService.getWeatherByCoordinates(latitude, longitude);
 
-            // 🔥 Cas où l'API répond mais sans station
             if (result == null || result.getStationMeteo() == null) {
-                request.setAttribute(
-                        "error",
-                        "🤷‍♂️ Tu es soit dans l’eau, soit trop loin d’une station météo existante."
-                );
+                request.setAttribute("error", "🤷‍♂️ Aucune station trouvée à proximité.");
             } else {
+                // 🔥 SOLUTION ICI : On recharge la station avec son numéro pour avoir sa LISTE DE METEO
+                StationMeteo stationComplete = appService.getStationByNumero(result.getStationMeteo().getNumero());
+                result.setStationMeteo(stationComplete);
+
                 request.setAttribute("station", result);
             }
-
         }
         catch (java.rmi.RemoteException e) {
             // 🔥 CAS NORMAL : API ne trouve rien
@@ -76,7 +75,7 @@ public class FindStationServlet extends HttpServlet {
             );
         }
 
-        request.getRequestDispatcher("/findStation.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.jsp").forward(request, response);
     }
 
 

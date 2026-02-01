@@ -1,6 +1,7 @@
 package ch.hearc.heg.scl.business;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.rmi.Remote;
@@ -12,6 +13,7 @@ public class ResultSearch implements Remote, Serializable {
     @Getter
     private Meteo meteo;
     @Getter
+    @Setter
     private StationMeteo stationMeteo;
 
     public ResultSearch(Pays pays, Meteo meteo, StationMeteo stationMeteo) {

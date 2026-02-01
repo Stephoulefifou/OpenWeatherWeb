@@ -1,8 +1,16 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 
-<div class="menu">
-    <a href="${pageContext.request.contextPath}/findStation">Ajouter une station</a>
-    <a href="${pageContext.request.contextPath}/stations">Toutes les stations</a>
-    <a href="${pageContext.request.contextPath}/map">Carte des stations</a>
-</div>
+<nav class="navbar">
+    <a href="${pageContext.request.contextPath}/findStation" class="nav-brand">
+        OpenWeather<span>M-App</span>
+    </a>
+
+    <div class="nav-links">
+        <a href="${pageContext.request.contextPath}/findStation" class="nav-item">➕ Ajouter</a>
+        <a href="${pageContext.request.contextPath}/stations" class="nav-item">📋 Stations</a>
+        <a href="${pageContext.request.contextPath}/map" class="nav-item">🌍 Carte</a>
+    </div>
+
+    <div class="nav-spacer"></div>
+</nav>
