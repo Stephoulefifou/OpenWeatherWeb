@@ -1,39 +1,91 @@
 package ch.hearc.heg.scl.servlet;
 
 import ch.hearc.heg.scl.business.StationMeteo;
+import ch.hearc.heg.scl.business.Meteo;
 import ch.hearc.heg.scl.services.AppService;
 import com.google.gson.Gson;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.w3c.dom.html.HTMLQuoteElement;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @WebServlet("/station-json")
 public class StationJsonServlet extends HttpServlet {
-    private final AppService appService = new AppService();
+    private final AppService appService;
 
     public StationJsonServlet() throws RemoteException {
+        this.appService = new AppService();
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        String numero = request.getParameter("numero");
-        StationMeteo station = appService.getStationByNumero(Integer.parseInt(numero));
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        if (station != null) {
-            response.getWriter().write(new Gson().toJson(station));
-        } else {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write("{\"error\":\"Station non trouvée\"}");
+        try {
+            String numeroParam = request.getParameter("numero");
+            if (numeroParam == null || numeroParam.isEmpty()) {
+                response.setStatus(400);
+                response.getWriter().write("{\"error\":\"Numéro manquant\"}");
+                return;
+            }
+
+            int numero = Integer.parseInt(numeroParam);
+            StationMeteo station = appService.getStationByNumero(numero);
+
+            if (station == null) {
+                response.setStatus(404);
+                response.getWriter().write("{\"error\":\"Station introuvable\"}");
+                return;
+            }
+
+            // Préparation manuelle du JSON pour être SÛR des noms de champs
+            Map<String, Object> json = new java.util.HashMap<>();
+            json.put("numero", station.getNumero());
+            json.put("nom", station.getNom());
+            json.put("latitude", station.getLatitude());
+            json.put("longitude", station.getLongitude());
+
+            Map<String, String> paysMap = new java.util.HashMap<>();
+            paysMap.put("nom", station.getPays() != null ? station.getPays().getNom() : "Inconnu");
+            json.put("pays", paysMap);
+
+            List<Map<String, Object>> listeMeteo = new ArrayList<>();
+            for (Meteo m : station.getDonneesMeteo()) {
+                Map<String, Object> mm = new java.util.HashMap<>();
+                // Formattage de la date pour qu'elle soit jolie en JS
+                mm.put("date", m.getDateMesure() != null ?
+                        m.getDateMesure().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) : "Date inconnue");
+                mm.put("temp", m.getTemperature());
+                mm.put("humi", m.getHumidite());
+                listeMeteo.add(mm);
+            }
+            json.put("donneesMeteo", listeMeteo);
+
+            response.getWriter().write(new Gson().toJson(json));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(500);
+            response.getWriter().write("{\"error\":\"Erreur serveur\"}");
         }
     }
+
+
 }
+
 

@@ -103,7 +103,7 @@ li {
     background: rgba(0,0,0,0.5);
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 1000;  /* important */
 }
 
 .modal-content {
@@ -115,6 +115,9 @@ li {
     width: 90%;
     text-align: left;
     position: relative;
+    max-height: 90vh;          /* 90% de la hauteur de l'écran max */
+    display: flex;
+    flex-direction: column;    /* Organise les éléments verticalement */
 }
 
 .close {
@@ -133,4 +136,53 @@ li {
     cursor: pointer;
     background: #4facfe;
     color: #fff;
+}
+.station-card {
+    cursor: pointer;  /* déjà dans ton style générique */
+    z-index: 10;
+    position: relative;
+}
+.last-meteo {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #003049;
+}
+/* Limiter la taille de la liste de météo */
+#modalMeteoList {
+    max-height: 300px;         /* Hauteur max avant de scroller */
+    overflow-y: auto;          /* Active le scroll vertical si besoin */
+    margin: 20px 0;            /* Espace en haut et en bas */
+    padding: 10px;
+    background-color: #f9f9f9; /* Un fond légèrement gris pour distinguer la zone */
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+/* On force le bouton refresh à rester en bas */
+#refreshStationBtn {
+    margin-top: auto;          /* Pousse le bouton vers le bas */
+    flex-shrink: 0;            /* Empêche le bouton de s'écraser */
+}
+
+/* Optionnel : Rendre la scrollbar plus jolie sur Chrome/Safari */
+#modalMeteoList::-webkit-scrollbar {
+    width: 8px;
+}
+#modalMeteoList::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+#modalMeteoList::-webkit-scrollbar-thumb:hover {
+    background: #b3b3b3;
+}
+/* Supprime les marges automatiques qui créent des espaces */
+.modal-content h2 {
+    margin-top: 0;      /* Enlève l'espace au dessus du nom de la ville */
+    margin-bottom: 5px; /* Petit espace sous le nom */
+}
+
+.modal-content p {
+    margin: 2px 0;      /* Réduit l'espace entre Pays et Coordonnées */
+    font-size: 0.9em;   /* Optionnel : rend le texte un poil plus petit pour gagner de la place */
 }
