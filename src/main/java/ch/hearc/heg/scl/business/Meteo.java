@@ -47,9 +47,9 @@ public class Meteo implements Serializable {
 
     // --- Atmosphère ---
     @Column(name = "pression")
-    private int pression;
+    private Integer pression;
     @Column(name = "humidite")
-    private int humidite;
+    private Integer humidite;
     @Column(name = "visibilite")
     private Integer visibilite;
     @Column(name = "precipitation")

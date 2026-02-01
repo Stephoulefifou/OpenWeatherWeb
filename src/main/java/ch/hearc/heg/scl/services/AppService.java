@@ -127,17 +127,34 @@ public class AppService implements IOpenWeatherServices {
         Meteo copy = new Meteo();
         copy.setNumero(m.getNumero());
         copy.setDateMesure(m.getDateMesure());
+
+        // --- Températures ---
         copy.setTemperature(m.getTemperature());
+        copy.setRessenti(m.getRessenti());
+        copy.setTempMin(m.getTempMin());
+        copy.setTempMax(m.getTempMax());
+
+        // --- Atmosphère ---
         copy.setPression(m.getPression());
         copy.setHumidite(m.getHumidite());
         copy.setVisibilite(m.getVisibilite());
         copy.setPrecipitation(m.getPrecipitation());
 
+        // --- Vent ---
+        copy.setVentVitesse(m.getVentVitesse());
+        copy.setVentDirection(m.getVentDirection());
+        copy.setVentRafales(m.getVentRafales());
+
+        // --- Éphéméride ---
+        copy.setLeverSoleil(m.getLeverSoleil());
+        copy.setCoucherSoleil(m.getCoucherSoleil());
+
+        // --- Descriptions (Détachage de la liste Hibernate) ---
         if (m.getTexte() != null) {
-            copy.setTexte(new ArrayList<>(m.getTexte())); // NO PersistentBag
+            copy.setTexte(new ArrayList<>(m.getTexte()));
         }
 
-        copy.setStation(null); // 🚨 IMPORTANT : on coupe la boucle et on évite les proxys
+        copy.setStation(null); // Coupe la boucle récursive pour la sérialisation
 
         return copy;
     }
@@ -146,6 +163,7 @@ public class AppService implements IOpenWeatherServices {
      * Détache le lien entre Hibernate et les données d'une station météo au lieu de laisser Hibernate gérer, afin de pouvoir l'envoyer au client
      */
     private StationMeteo detachStation(StationMeteo s) {
+        if (s == null) return null; // Sécurité
 
         StationMeteo copy = new StationMeteo();
         copy.setNumero(s.getNumero());
@@ -154,26 +172,15 @@ public class AppService implements IOpenWeatherServices {
         copy.setLongitude(s.getLongitude());
         copy.setOpenWeatherMapId(s.getOpenWeatherMapId());
 
-        // copie propre de la liste de Meteo
         List<Meteo> newList = new ArrayList<>();
-        for (Meteo m : s.getDonneesMeteo()) {
-
-            if (m == null) continue;
-
-            Meteo m2 = new Meteo();
-            m2.setNumero(m.getNumero());
-            m2.setDateMesure(m.getDateMesure());
-            m2.setTemperature(m.getTemperature());
-
-            // copie du texte (plus de PersistentBag)
-            if (m.getTexte() != null)
-                m2.setTexte(new ArrayList<>(m.getTexte()));
-
-            newList.add(m2);
+        if (s.getDonneesMeteo() != null) {
+            for (Meteo m : s.getDonneesMeteo()) {
+                // Utilise la méthode detachMeteo que tu as déjà corrigée !
+                // Ça évite de réécrire 15 lignes et d'oublier des champs.
+                newList.add(detachMeteo(m));
+            }
         }
-
         copy.setDonneesMeteo(newList);
-
         return copy;
     }
 
@@ -338,17 +345,13 @@ public class AppService implements IOpenWeatherServices {
                     .setParameter("stationId", stationMeteo.getNumero())
                     .getResultList();
 
-            // Convertir toutes les collections en ArrayList pour éviter PersistentBag
             List<Meteo> copy = new ArrayList<>();
             for (Meteo m : mesures) {
-                if (m.getTexte() != null) {
-                    m.setTexte(new ArrayList<>(m.getTexte()));
-                }
-                copy.add(m);
+                // ENCORE UNE FOIS : Utilise detachMeteo(m) ici !
+                copy.add(detachMeteo(m));
             }
 
             stationMeteo.setDonneesMeteo(copy);
-
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement des données météo : " + e.getMessage());
         }
@@ -360,7 +363,7 @@ public class AppService implements IOpenWeatherServices {
     private ResultSearch detachResultSearch(ResultSearch rs) {
         if (rs == null) return null;
 
-        // Détacher Pays
+        // 1. Détacher le Pays
         Pays pays = null;
         if (rs.getPays() != null) {
             Pays p = rs.getPays();
@@ -370,63 +373,41 @@ public class AppService implements IOpenWeatherServices {
             pays.setNom(p.getNom());
         }
 
-        // Détacher Meteo
-        Meteo meteo = null;
-        if (rs.getMeteo() != null) {
-            Meteo m = rs.getMeteo();
-            meteo = new Meteo();
-            meteo.setNumero(m.getNumero());
-            meteo.setStation(null); // on a déjà la station complète
-            meteo.setDateMesure(m.getDateMesure());
-            meteo.setTemperature(m.getTemperature());
-            meteo.setPression(m.getPression());
-            meteo.setHumidite(m.getHumidite());
-            meteo.setVisibilite(m.getVisibilite());
-            meteo.setPrecipitation(m.getPrecipitation());
-            meteo.setTexte(m.getTexte() != null ? new ArrayList<>(m.getTexte()) : new ArrayList<>());
-        }
+        // 2. Détacher la mesure Météo principale (en utilisant notre méthode du dessus)
+        Meteo meteo = detachMeteo(rs.getMeteo());
 
-        // Détacher StationMeteo
+        // 3. Détacher la StationMeteo et sa liste de mesures
         StationMeteo station = null;
         if (rs.getStationMeteo() != null) {
             StationMeteo s = rs.getStationMeteo();
             station = new StationMeteo();
             station.setNumero(s.getNumero());
             station.setNom(s.getNom());
-            station.setPays(pays);
+            station.setPays(pays); // On utilise le pays déjà détaché
             station.setLatitude(s.getLatitude());
             station.setLongitude(s.getLongitude());
             station.setOpenWeatherMapId(s.getOpenWeatherMapId());
 
-            List<Meteo> copy = new ArrayList<>();
+            // Copie propre de la liste des mesures de la station
+            List<Meteo> copyListe = new ArrayList<>();
             if (s.getDonneesMeteo() != null) {
                 for (Meteo m : s.getDonneesMeteo()) {
-                    Meteo mm = new Meteo();
-                    mm.setNumero(m.getNumero());
-                    mm.setStation(null); // pour éviter boucle
-                    mm.setDateMesure(m.getDateMesure());
-                    mm.setTemperature(m.getTemperature());
-                    mm.setPression(m.getPression());
-                    mm.setHumidite(m.getHumidite());
-                    mm.setVisibilite(m.getVisibilite());
-                    mm.setPrecipitation(m.getPrecipitation());
-                    mm.setTexte(m.getTexte() != null ? new ArrayList<>(m.getTexte()) : new ArrayList<>());
-                    copy.add(mm);
+                    // On réutilise detachMeteo pour chaque élément de la liste
+                    copyListe.add(detachMeteo(m));
                 }
             }
-            station.setDonneesMeteo(copy);
+            station.setDonneesMeteo(copyListe);
         }
 
         return new ResultSearch(pays, meteo, station);
     }
+
 
     /**
      * Retourne la station complète avec toutes ses mesures météo détachées, par son numero.
      */
     public StationMeteo getStationByNumero(int numero) {
         try (Session session = SessionConfiguration.getSessionFactory().openSession()) {
-
-            // --- Récupère la station depuis la DB ---
             StationMeteo station = session.createQuery(
                             "from StationMeteo s where s.numero = :numero", StationMeteo.class)
                     .setParameter("numero", numero)
@@ -434,33 +415,19 @@ public class AppService implements IOpenWeatherServices {
 
             if (station == null) return null;
 
-            // --- Charge toutes les mesures météo associées ---
             List<Meteo> mesures = session.createQuery(
                             "from Meteo m where m.station.numero = :stationId order by m.dateMesure asc", Meteo.class)
                     .setParameter("stationId", numero)
                     .getResultList();
 
-            // --- Détache toutes les mesures pour éviter les PersistentBag / proxys ---
             List<Meteo> copy = new ArrayList<>();
             for (Meteo m : mesures) {
                 if (m == null) continue;
-
-                Meteo m2 = new Meteo();
-                m2.setNumero(m.getNumero());
-                m2.setDateMesure(m.getDateMesure());
-                m2.setTemperature(m.getTemperature());
-                m2.setPression(m.getPression());
-                m2.setHumidite(m.getHumidite());
-                m2.setVisibilite(m.getVisibilite());
-                m2.setPrecipitation(m.getPrecipitation());
-                m2.setTexte(m.getTexte() != null ? new ArrayList<>(m.getTexte()) : new ArrayList<>());
-
-                copy.add(m2);
+                // Appelle simplement ta méthode utilitaire :
+                copy.add(detachMeteo(m));
             }
-
             station.setDonneesMeteo(copy);
 
-            // --- Détache le pays pour éviter les proxys ---
             if (station.getPays() != null) {
                 Pays p = station.getPays();
                 Pays copyPays = new Pays();

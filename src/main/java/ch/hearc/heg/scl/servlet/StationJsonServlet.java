@@ -67,16 +67,34 @@ public class StationJsonServlet extends HttpServlet {
             List<Map<String, Object>> listeMeteo = new ArrayList<>();
             for (Meteo m : station.getDonneesMeteo()) {
                 Map<String, Object> mm = new java.util.HashMap<>();
-                // Formattage de la date pour qu'elle soit jolie en JS
-                mm.put("date", m.getDateMesure() != null ?
-                        m.getDateMesure().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) : "Date inconnue");
+                mm.put("date", m.getPrettyDate());
                 mm.put("temp", m.getTemperature());
+                mm.put("ressenti", m.getRessenti());
+                mm.put("tempMin", m.getTempMin());
+                mm.put("tempMax", m.getTempMax());
                 mm.put("humi", m.getHumidite());
+                mm.put("pression", m.getPression());
+                mm.put("visibilite", m.getVisibilite());
+                mm.put("precipitation", m.getPrecipitation());
+                mm.put("ventVitesse", m.getVentVitesse());
+                mm.put("ventDirection", m.getVentDirection());
+                mm.put("ventRafales", m.getVentRafales());
+                mm.put("leverSoleil", m.getLeverSoleil() != null ?
+                        m.getLeverSoleil().format(DateTimeFormatter.ofPattern("HH:mm")) : "Inconnu");
+                mm.put("coucherSoleil", m.getCoucherSoleil() != null ?
+                        m.getCoucherSoleil().format(DateTimeFormatter.ofPattern("HH:mm")) : "Inconnu");
+                mm.put("texte", m.getTexte()); // liste de descriptions
                 listeMeteo.add(mm);
             }
+
             json.put("donneesMeteo", listeMeteo);
 
-            response.getWriter().write(new Gson().toJson(json));
+            com.google.gson.Gson gson = new com.google.gson.GsonBuilder()
+                    .serializeNulls() // <--- Force l'affichage des nulls
+                    .setPrettyPrinting() // Optionnel : rend le JSON lisible dans le navigateur
+                    .create();
+
+            response.getWriter().write(gson.toJson(json));
 
         } catch (Exception e) {
             e.printStackTrace();

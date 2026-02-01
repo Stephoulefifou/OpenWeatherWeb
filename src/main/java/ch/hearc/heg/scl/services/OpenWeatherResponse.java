@@ -30,8 +30,8 @@ public class OpenWeatherResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Coord {
-        private double lon;
-        private double lat;
+        private Double lon;
+        private Double lat;
     }
 
     @Data
@@ -48,13 +48,13 @@ public class OpenWeatherResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Main {
-        private double temp;
+        private Double temp;
         @SerializedName("feels_like")
-        private double feelsLike;
+        private Double feelsLike;
         @SerializedName("temp_min")
-        private double tempMin;
+        private Double tempMin;
         @SerializedName("temp_max")
-        private double tempMax;
+        private Double tempMax;
         private int pressure;
         private int humidity;
         @SerializedName("sea_level")
@@ -67,9 +67,9 @@ public class OpenWeatherResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Wind {
-        private double speed;
+        private Double speed;
         private int deg;
-        private double gust;
+        private Double gust;
     }
 
     @Data
@@ -77,7 +77,7 @@ public class OpenWeatherResponse {
     @AllArgsConstructor
     public static class Rain {
         @SerializedName("1h")
-        private double oneHour;
+        private Double oneHour;
     }
 
     @Data

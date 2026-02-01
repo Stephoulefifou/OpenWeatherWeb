@@ -178,11 +178,21 @@ li {
 }
 
 #modalMeteoList {
-    max-height: 300px;   /* hauteur max */
-    overflow-y: auto;    /* scroll vertical */
+    max-height: 400px; /* ou ce que tu veux */
+    overflow-y: auto;
+    margin-top: 10px;
+    border-top: 1px solid #ccc;
+    padding-top: 5px;
 }
+
 #modalMeteoList p {
     padding: 6px 0;
     border-bottom: 1px solid #eee;
     margin: 0;
+}
+
+#map {
+    height: 600px; /* Ou une autre valeur, par exemple 80vh */
+    width: 100%;
+    border: 1px solid #ccc; /* Optionnel : pour voir si le bloc existe */
 }

@@ -47,33 +47,15 @@
     </c:choose>
 </div>
 
-<!-- Modal -->
+<!-- Modal pour une station -->
 <div id="stationModal" class="modal">
     <div class="modal-content">
         <span id="closeModal" class="close">&times;</span>
-
         <h2 id="modalStationName"></h2>
+        <p id="modalStationPays"></p>
         <p id="modalStationCoords"></p>
-
-        <div class="section" id="meteoMainSection">
-            <h3>🌡️ Température & Humidité</h3>
-            <div id="meteoMain"></div>
-        </div>
-
-        <div class="section" id="meteoWindSection">
-            <h3>💨 Vent</h3>
-            <div id="meteoWind"></div>
-        </div>
-
-        <div class="section" id="meteoCloudsSection">
-            <h3>☁️ Nuages / Pluie</h3>
-            <div id="meteoClouds"></div>
-        </div>
-
-        <div class="section" id="meteoSunSection">
-            <h3>🌅 Soleil</h3>
-            <div id="meteoSun"></div>
-        </div>
+        <!-- Cette zone va maintenant scroller toute seule -->
+        <div id="modalMeteoList"></div>
 
         <button id="refreshStationBtn">🔄 Rafraîchir cette station</button>
     </div>
@@ -119,74 +101,56 @@
         console.log("Ouverture modal pour station :", numero);
 
         fetch('station-json?numero=' + numero)
-            .then(res => {
-                if (!res.ok) { // Gérer les erreurs HTTP comme 404, 500
-                    throw new Error(`Erreur HTTP: ${res.status} ${res.statusText}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
-                console.log("Données reçues (StationMeteo) :", data);
+                console.log("Données reçues :", data);
 
-                // 1. Infos de base de la station
-                modalStationName.textContent = data.nom + " (" + (data.pays ? data.pays.nom : "Inconnu") + ")";
-                modalStationCoords.textContent = "Lat: " + data.latitude + " | Lon: " + data.longitude;
+                // Remplissage des infos station (textContent est sûr)
+                modalStationName.textContent =  data.nom +" - " + (data.pays ? data.pays.nom : "Inconnu");
+                modalStationCoords.textContent = "Latitude : " + data.latitude + " - Longitude : " + data.longitude;
 
-                // On récupère la dernière mesure enregistrée
+                // Remplissage de la liste météo
+                modalMeteoList.innerHTML = "";
+
+
                 if (data.donneesMeteo && data.donneesMeteo.length > 0) {
-                    const m = data.donneesMeteo;
-                    console.log("DÉBOGAGE - Première mesure :", m); // Pour voir les noms de champs exacts
+                    data.donneesMeteo.forEach(m => {
+                        const p = document.createElement('p');
+                        p.style.padding = "8px";
+                        p.style.borderBottom = "1px solid #eee";
+                        p.style.margin = "0";
 
-                    // 2. Température & Humidité
-                    const description = m.texte ? m.texte.join(', ') : "Pas de description";
-                    meteoMain.innerHTML = `
-                        <p>🌡️ Température : \${m.temperature || '--'}°C (ressenti \${m.ressenti || '--'}°C)</p>
-                        <p>Min / Max : \${m.tempMin || '--'}°C / \${m.tempMax || '--'}°C</p>
-                        <p>💧 Humidité : \${m.humidite || 0}%</p>
-                        <p>🔽 Pression : \${m.pression || 0} hPa</p>
-                        <p>☁️ Conditions : \${description}</p>
-                    `;
+                        let html = '<strong>' + m.date + '</strong> : ';
+                        html += '🌡️ ' + m.temp + '°C (ressenti ' + m.ressenti + '°C) | ';
+                        html += 'Min/Max: ' + m.tempMin + '/' + m.tempMax + '°C | ';
+                        html += '💧 Humidité: ' + m.humi + '% | ';
+                        html += '💨 Vent: ' + m.ventVitesse + ' km/h, rafales ' + m.ventRafales + ' km/h, dir ' + m.ventDirection + '° | ';
+                        html += '🌦️ Pluie: ' + m.precipitation + ' mm | ';
+                        html += '🌤️ Pression: ' + m.pression + ' hPa | ';
+                        html += '🌫️ Visibilité: ' + m.visibilite + ' m | ';
+                        html += '☀️ Lever: ' + m.leverSoleil + ' / Coucher: ' + m.coucherSoleil + ' | ';
+                        if (m.texte && m.texte.length > 0) {
+                            html += 'Descriptions: ' + m.texte.join(", ");
+                        }
 
-                    // 3. Vent (CORRIGÉ ICI POUR INTELIJ)
-                    let windHtmlContent = `
-                        <p>💨 Vitesse : \${m.ventVitesse || 0} m/s</p>
-                        <p>🧭 Direction : \${m.ventDirection || 0}°</p>
-                    `;
-                    // Ajout conditionnel des rafales
-                    if (m.ventRafales) {
-                        // Ici, on est dans un bloc JavaScript "normal", donc pas besoin d'échapper le $
-                        windHtmlContent += `<p>🌪️ Rafales : ${m.ventRafales} m/s</p>`;
-                    }
-                    meteoWind.innerHTML = windHtmlContent;
-
-                    // 4. Nuages / Pluie
-                    meteoClouds.innerHTML = `
-                        <p>🌧️ Précipitations : \${m.precipitation || 0} mm</p>
-                        <p>👁️ Visibilité : \${m.visibilite || '--'} m</p>
-                    `;
-
-                    // 5. Soleil (Lever / Coucher)
-                    meteoSun.innerHTML = `
-                        <p>🌅 Lever : \${formatTime(m.leverSoleil)}</p>
-                        <p>🌇 Coucher : \${formatTime(m.coucherSoleil)}</p>
-                    `;
-
+                        p.innerHTML = html;
+                        modalMeteoList.appendChild(p);
+                    });
                 } else {
-                    meteoMain.innerHTML = "<p>Aucune donnée météo disponible. Cliquez sur Rafraîchir.</p>";
-                    meteoWind.innerHTML = "";
-                    meteoClouds.innerHTML = "";
-                    meteoSun.innerHTML = "";
+                    modalMeteoList.innerHTML = "<p>Aucune donnée météo disponible.</p>";
                 }
 
-                // Bouton rafraîchir
-                refreshBtn.onclick = () => refreshStation(numero);
 
-                // Afficher la modale
+                // Gestion du bouton rafraîchir
+                refreshBtn.onclick = function() {
+                    refreshStation(data.numero);
+                };
+
                 modal.style.display = "flex";
             })
             .catch(err => {
                 console.error("Erreur dans openStationModal:", err);
-                alert("Erreur lors du chargement des données de la station.");
+                showModalError("Erreur de chargement des données.");
             });
     }
 
