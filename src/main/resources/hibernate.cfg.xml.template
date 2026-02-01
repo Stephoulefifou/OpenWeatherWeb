@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.connection.driver_class">oracle.jdbc.OracleDriver</property>
+        <property name="hibernate.connection.url">lien_vers_la_base_de_données</property>
+        <property name="hibernate.connection.username">NOM_D_UTILISATEUR</property>
+        <property name="hibernate.connection.password">MOT_DE_PASSE</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.OracleDialect</property>
+        <property name="hibernate.show_sql">false</property>
+        <property name="hibernate.format_sql">false</property>
+        <property name="hibernate.use_sql_comments">false</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <mapping class="ch.hearc.heg.scl.business.Pays"/>
+        <mapping class="ch.hearc.heg.scl.business.Meteo"/>
+        <mapping class="ch.hearc.heg.scl.business.StationMeteo"/>
+    </session-factory>
+</hibernate-configuration>
