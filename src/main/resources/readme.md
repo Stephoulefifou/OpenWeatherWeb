@@ -1,30 +1,39 @@
-Projet 2 OpenWeatherMap  – README
+Projet 3 OpenWeatherMap  – README
 --------------------------------
-Membres du groupe :
+**Membres du groupe :**
 
 Nathan Altermatt  
 Stéphane Thiébaud
 
 --------------------------------
-Description :
+**Description :**
 
-Projet client/serveur pour récupérer et afficher des données météo via l’API OpenWeather et les stocker dans une base Oracle.
-
---------------------------------
-Fonctionnalités :
-
-- Rechercher la météo par coordonnées (ajoute la station si absente).
-- Lister les stations météo de la base.
-- Afficher toutes les infos d’une station (toutes les mesures météo).
-- Rafraîchir les données des stations existantes.
+Projet web qui récupère des coordonnées GPS (latitude et longitude) et affiche les données de la station météo la plus proche et son emplacement sur une carte.
 
 --------------------------------
-Configuration base de données et mise en place :
+**Fonctionnalités :**
 
-Si vous lancez ce projet du zip, il suffit de charger Maven si nécéssaire et tout doit marcher.
-Si vous copiez depuis git (https://github.com/Stephoulefifou/OpenWeather.git), il est nécéssaire d'ajouter le hibernate.cfg.xml dans les ressources du serveur (le fichier est dans le zip)
+-  Saisie d’une nouvelle station météo
+-  Afficher la liste des stations météos de la DB
+-  Affichage des détails d’une station météo et de ses mesures
+-  Rafraichir les données météo d’une station particulière 
+-  Rafraichir les données météo de toutes les stations 
+-  Afficher une carte avec les stations
 
-Le client est configuré pour aller sur le localhost.  
-Si vous souhaitez changer ceci pour tester depuis un autre PC, il suffit de changer les lignes dans le MainClient et le MainServer. Dans les deux cas : commentez la ligne du localhost, décommentez l'autre, renseignez l'IP du serveur à l'endroit indiqué.
+--------------------------------
+**Configuration base de données et mise en place :**
 
-NOTE : Les schémas "normaux" ne permettent plus d'accès. nous avons ainsi mis nos schéma AGL, qui ont une théorique durée restante de 7 jours. Dans le cas ou cela ne fonctionnerait pas au démarrage, il faudrait remplacer les informations dans hibernate.cfg.xml par vos propres schémas Oracle. Hibernate se chargera de la création des tables.
+Le projet utilise une base de données Oracle et les tables sont créées automatiquement par Hibernate.
+1. Si le projet est lancé sur le zip fourni, il suffit d'importer le projet Maven :
+
+   Toutes les dépendances sont automatiquement téléchargées.
+
+
+2. Si le projet est cloné depuis GitHub, il faut vérifier le fichier hibernate.cfg.xml
+
+   Si le fichier n'existe pas, prendre la template, supprimer le _.templete_ et renseigner les propriétés de configuration.
+
+Pour lancer l'application, on démarre le serveur Tomcat, on déploie l'application web et on accède à l'URL suivant : <ins>http://localhost:8080</ins>.
+
+
+_NOTE_ : Les schémas "normaux" ne permettent plus d'accès. Nous avons ainsi mis nos schémas AGL, qui ont une théorique durée restante de 7 jours. Dans le cas ou cela ne fonctionnerait pas au démarrage, il faudrait remplacer les informations dans hibernate.cfg.xml par vos propres schémas Oracle. Hibernate se chargera de la création des tables.
