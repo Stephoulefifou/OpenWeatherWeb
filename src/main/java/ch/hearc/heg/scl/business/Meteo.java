@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = "station") // ✅ Exclure station pour éviter boucle infinie
+@ToString(exclude = "station")
 @Log
 public class Meteo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -34,8 +34,18 @@ public class Meteo implements Serializable {
 
     @Column(name = "date_mesure")
     private LocalDateTime dateMesure;
+
+    // --- Températures ---
     @Column(name = "temperature")
     private Double temperature;
+    @Column(name = "ressenti")
+    private Double ressenti;
+    @Column(name = "temp_min")
+    private Double tempMin;
+    @Column(name = "temp_max")
+    private Double tempMax;
+
+    // --- Atmosphère ---
     @Column(name = "pression")
     private int pression;
     @Column(name = "humidite")
@@ -45,20 +55,34 @@ public class Meteo implements Serializable {
     @Column(name = "precipitation")
     private Double precipitation;
 
+    // --- Vent ---
+    @Column(name = "vent_vitesse")
+    private Double ventVitesse;
+    @Column(name = "vent_direction")
+    private Integer ventDirection;
+    @Column(name = "vent_rafales")
+    private Double ventRafales;
+
+    // --- Éphéméride ---
+    @Column(name = "lever_soleil")
+    private LocalDateTime leverSoleil;
+    @Column(name = "coucher_soleil")
+    private LocalDateTime coucherSoleil;
+
     @ElementCollection
     @CollectionTable(
             name = "METEO_DESCRIPTION",
             joinColumns = @JoinColumn(name = "METEO_NUMERO")
     )
-    @Column(name = "TEXTE", nullable = false) // correspond à la colonne TEXTE de ta table
+    @Column(name = "TEXTE", nullable = false)
     private List<String> texte = new ArrayList<>();
 
     public String getDateMesureStr() {
-        return dateMesure.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return dateMesure != null ? dateMesure.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "";
     }
+
     public String getPrettyDate() {
         if (this.dateMesure == null) return "Date inconnue";
-        // Format : Jour.Mois.Année Heure:Minute
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
         return this.dateMesure.format(formatter);
     }

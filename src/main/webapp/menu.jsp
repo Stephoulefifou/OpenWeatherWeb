@@ -3,6 +3,6 @@
 
 <div class="menu">
     <a href="${pageContext.request.contextPath}/findStation">Ajouter une station</a>
-    <a href="${pageContext.request.contextPath}/stations">Afficher toutes les stations</a>
-    <a href="${pageContext.request.contextPath}/stations">Rafraîchir toutes les stations</a>
+    <a href="${pageContext.request.contextPath}/stations">Toutes les stations</a>
+    <a href="${pageContext.request.contextPath}/map">Carte des stations</a>
 </div>

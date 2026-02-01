@@ -15,41 +15,66 @@ public class MeteoMapper {
         this.dto = dto;
     }
 
-    /**
-     * Transforme le DTO OpenWeatherResponse en entité Météo
-     */
     public Meteo mapToEntity() {
         Meteo meteo = new Meteo();
 
-        // --- Date et mesures ---
-        meteo.setDateMesure(LocalDateTime.ofInstant(
-                Instant.ofEpochSecond(dto.getDt()),
-                ZoneId.systemDefault()
-        ));
-        meteo.setTemperature(dto.getMain().getTemp());
-        meteo.setPression(dto.getMain().getPressure());
-        meteo.setHumidite(dto.getMain().getHumidity());
+        // --- Date de la mesure ---
+        meteo.setDateMesure(toLocalDateTime(dto.getDt()));
+
+        // --- Températures (Main) ---
+        if (dto.getMain() != null) {
+            meteo.setTemperature(dto.getMain().getTemp());
+            meteo.setRessenti(dto.getMain().getFeelsLike());
+            meteo.setTempMin(dto.getMain().getTempMin());
+            meteo.setTempMax(dto.getMain().getTempMax());
+            meteo.setPression(dto.getMain().getPressure());
+            meteo.setHumidite(dto.getMain().getHumidity());
+        }
+
+        // --- Divers ---
         meteo.setVisibilite(dto.getVisibility());
+
+        // --- Pluie ---
         if (dto.getRain() != null) {
             meteo.setPrecipitation(dto.getRain().getOneHour());
         }
 
-        // --- Descriptions météo ---
+        // --- Vent ---
+        if (dto.getWind() != null) {
+            meteo.setVentVitesse(dto.getWind().getSpeed());
+            meteo.setVentDirection(dto.getWind().getDeg());
+            meteo.setVentRafales(dto.getWind().getGust());
+        }
+
+        // --- Soleil (Sys) ---
+        if (dto.getSys() != null) {
+            meteo.setLeverSoleil(toLocalDateTime(dto.getSys().getSunrise()));
+            meteo.setCoucherSoleil(toLocalDateTime(dto.getSys().getSunset()));
+        }
+
+        // --- Descriptions ---
         if (dto.getWeather() != null && !dto.getWeather().isEmpty()) {
             dto.getWeather().forEach(w -> {
                 String desc = w.getDescription();
-                if (desc == null || desc.isBlank()) {
-                    desc = "Pas de description";
-                }
-                meteo.getTexte().add(desc);
+                meteo.getTexte().add((desc == null || desc.isBlank()) ? "Pas de description" : desc);
             });
         }
 
-        // --- Sécurité : jamais laisser la liste vide ---
         if (meteo.getTexte().isEmpty()) {
             meteo.getTexte().add("Pas de description");
         }
 
         return meteo;
+    }
+
+    /**
+     * Utilitaire pour convertir un timestamp Unix (long) en LocalDateTime
+     */
+    private LocalDateTime toLocalDateTime(long unixTimestamp) {
+        if (unixTimestamp <= 0) return null;
+        return LocalDateTime.ofInstant(
+                Instant.ofEpochSecond(unixTimestamp),
+                ZoneId.systemDefault()
+        );
     }
 }
